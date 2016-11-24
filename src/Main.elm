@@ -3,7 +3,6 @@ module Main exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Utils
 import Regex
 
 
@@ -59,8 +58,7 @@ update msg model =
     case msg of
         UpdateEmailText text ->
             { model
-                | email =
-                    text
+                | email = text
                 , emailErrors = validateEmail text
                 , validateStatus = validateForm { model | email = text }
             }
@@ -75,6 +73,10 @@ update msg model =
                 ! []
 
 
+
+-- Form Validator
+
+
 validateForm : Model -> Bool
 validateForm model =
     let
@@ -85,6 +87,10 @@ validateForm model =
             List.filter (\e -> e /= Nothing) allFormElements
     in
         (errorElements |> List.length) == 0
+
+
+
+-- Form Element Validators
 
 
 validateEmail : String -> ValidationErrors
@@ -126,7 +132,7 @@ validateRegex regex string =
     if Regex.contains (Regex.regex regex) string then
         Nothing
     else
-        Just "must match regular expression"
+        Just "invalid string format"
 
 
 
@@ -146,23 +152,32 @@ errorString errors =
 view : Model -> Html Msg
 view model =
     div [ class "container", style [ ( "width", "300px" ) ] ]
-        [ Html.form []
+        [ p [] [ text ("Form validate status: " ++ toString model.validateStatus) ]
+        , Html.form []
             [ div [ class "form-group" ]
-                [ label [ for "exampleInputEmail1" ]
-                    [ text "Email address" ]
+                [ label [ for "exampleInputEmail1" ] [ text "Email address" ]
                 , input
-                    [ attribute "aria-describedby" "emailHelp", class "form-control", id "exampleInputEmail1", placeholder "Enter email", type_ "email", onInput UpdateEmailText ]
+                    [ class "form-control"
+                    , id "exampleInputEmail1"
+                    , placeholder "Enter email"
+                    , type_ "email"
+                    , onInput UpdateEmailText
+                    ]
                     []
-                , small [ class "form-text text-muted", id "emailHelp" ]
+                , small [ class "form-text text-muted" ]
                     [ text (errorString model.emailErrors) ]
-                , p [] [ text (toString model.validateStatus) ]
                 ]
             , div [ class "form-group" ]
-                [ label [ for "exampleInputPassword1" ]
-                    [ text "Password" ]
-                , input [ class "form-control", id "exampleInputPassword1", placeholder "Password", type_ "password", onInput UpdatePasswordText ]
+                [ label [ for "exampleInputPassword1" ] [ text "Password" ]
+                , input
+                    [ class "form-control"
+                    , id "exampleInputPassword1"
+                    , placeholder "Password"
+                    , type_ "password"
+                    , onInput UpdatePasswordText
+                    ]
                     []
-                , small [ class "form-text text-muted", id "emailHelp" ]
+                , small [ class "form-text text-muted" ]
                     [ text (errorString model.passwordErrors) ]
                 ]
             , div [ class "form-group" ]
