@@ -34,6 +34,7 @@ type alias SignupForm =
 type alias FormElement =
     { input : String
     , errors : ValidationErrors
+    , validator : String -> ValidationErrors
     }
 
 
@@ -57,6 +58,7 @@ initEmail : FormElement
 initEmail =
     { input = ""
     , errors = (validateEmail "")
+    , validator = validateEmail
     }
 
 
@@ -64,6 +66,7 @@ initPassword : FormElement
 initPassword =
     { input = ""
     , errors = (validatePassword "")
+    , validator = validatePassword
     }
 
 
@@ -76,6 +79,14 @@ type Msg
     | UpdatePasswordText String
 
 
+updateFormElement : FormElement -> String -> FormElement
+updateFormElement formElement text =
+    { formElement
+        | input = text
+        , errors = formElement.validator text
+    }
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -84,20 +95,14 @@ update msg model =
                 signupForm =
                     model.signupForm
 
-                emailElement =
-                    signupForm.email
-
-                newEmailElement =
-                    { emailElement
-                        | input = text
-                        , errors = validateEmail text
-                    }
+                newFormElement =
+                    updateFormElement signupForm.email text
 
                 newSignupForm =
                     { signupForm
-                        | email = newEmailElement
+                        | email = newFormElement
                         , validateStatus =
-                            validateForm { signupForm | email = newEmailElement }
+                            validateForm { signupForm | email = newFormElement }
                     }
             in
                 { model | signupForm = newSignupForm } ! []
@@ -107,20 +112,14 @@ update msg model =
                 signupForm =
                     model.signupForm
 
-                passwordElement =
-                    signupForm.password
-
-                newPasswordElement =
-                    { passwordElement
-                        | input = text
-                        , errors = validatePassword text
-                    }
+                newFormElement =
+                    updateFormElement signupForm.password text
 
                 newSignupForm =
                     { signupForm
-                        | password = newPasswordElement
+                        | password = newFormElement
                         , validateStatus =
-                            validateForm { signupForm | password = newPasswordElement }
+                            validateForm { signupForm | password = newFormElement }
                     }
             in
                 { model | signupForm = newSignupForm } ! []
