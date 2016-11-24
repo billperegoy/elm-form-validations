@@ -45,12 +45,26 @@ type alias Model =
 init : ( Model, Cmd Msg )
 init =
     { signupForm =
-        { email = FormElement "" (validateEmail "")
-        , password = FormElement "" (validatePassword "")
+        { email = initEmail
+        , password = initPassword
         , validateStatus = False
         }
     }
         ! []
+
+
+initEmail : FormElement
+initEmail =
+    { input = ""
+    , errors = (validateEmail "")
+    }
+
+
+initPassword : FormElement
+initPassword =
+    { input = ""
+    , errors = (validatePassword "")
+    }
 
 
 
@@ -86,10 +100,7 @@ update msg model =
                             validateForm { signupForm | email = newEmailElement }
                     }
             in
-                { model
-                    | signupForm = newSignupForm
-                }
-                    ! []
+                { model | signupForm = newSignupForm } ! []
 
         UpdatePasswordText text ->
             let
@@ -112,10 +123,7 @@ update msg model =
                             validateForm { signupForm | password = newPasswordElement }
                     }
             in
-                { model
-                    | signupForm = newSignupForm
-                }
-                    ! []
+                { model | signupForm = newSignupForm } ! []
 
 
 
