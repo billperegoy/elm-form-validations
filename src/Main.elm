@@ -25,11 +25,15 @@ type alias ValidationErrors =
 
 
 type alias SignupForm =
-    { email : String
-    , emailErrors : ValidationErrors
-    , password : String
-    , passwordErrors : ValidationErrors
+    { email : FormElement
+    , password : FormElement
     , validateStatus : Bool
+    }
+
+
+type alias FormElement =
+    { input : String
+    , errors : ValidationErrors
     }
 
 
@@ -41,10 +45,8 @@ type alias Model =
 init : ( Model, Cmd Msg )
 init =
     { signupForm =
-        { email = ""
-        , emailErrors = validateEmail ""
-        , password = ""
-        , passwordErrors = validatePassword ""
+        { email = FormElement "" (validateEmail "")
+        , password = FormElement "" (validatePassword "")
         , validateStatus = False
         }
     }
@@ -68,11 +70,20 @@ update msg model =
                 signupForm =
                     model.signupForm
 
+                emailElement =
+                    signupForm.email
+
+                newEmailElement =
+                    { emailElement
+                        | input = text
+                        , errors = validateEmail text
+                    }
+
                 newSignupForm =
                     { signupForm
-                        | email = text
-                        , emailErrors = validateEmail text
-                        , validateStatus = validateForm { signupForm | email = text }
+                        | email = newEmailElement
+                        , validateStatus =
+                            validateForm { signupForm | email = newEmailElement }
                     }
             in
                 { model
@@ -85,11 +96,20 @@ update msg model =
                 signupForm =
                     model.signupForm
 
+                passwordElement =
+                    signupForm.password
+
+                newPasswordElement =
+                    { passwordElement
+                        | input = text
+                        , errors = validatePassword text
+                    }
+
                 newSignupForm =
                     { signupForm
-                        | password = text
-                        , passwordErrors = validatePassword text
-                        , validateStatus = validateForm { signupForm | password = text }
+                        | password = newPasswordElement
+                        , validateStatus =
+                            validateForm { signupForm | password = newPasswordElement }
                     }
             in
                 { model
@@ -105,8 +125,8 @@ update msg model =
 validateForm : SignupForm -> Bool
 validateForm form =
     runFormValidations form
-        [ ( validateEmail, .email )
-        , ( validatePassword, .password )
+        [ ( validateEmail, (\elem -> elem.email.input) )
+        , ( validatePassword, (\elem -> elem.password.input) )
         ]
 
 
@@ -209,7 +229,7 @@ view model =
                     ]
                     []
                 , small [ class "form-text text-muted" ]
-                    [ text (errorString model.signupForm.emailErrors) ]
+                    [ text (errorString model.signupForm.email.errors) ]
                 ]
             , div [ class "form-group" ]
                 [ label [ for "exampleInputPassword1" ] [ text "Password" ]
@@ -222,7 +242,7 @@ view model =
                     ]
                     []
                 , small [ class "form-text text-muted" ]
-                    [ text (errorString model.signupForm.passwordErrors) ]
+                    [ text (errorString model.signupForm.password.errors) ]
                 ]
             , div [ class "form-group" ]
                 [ label [ for "exampleSelect1" ]
