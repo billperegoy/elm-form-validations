@@ -79,14 +79,10 @@ update msg model =
 
 validateForm : Model -> Bool
 validateForm model =
-    let
-        allFormElements =
-            (validateEmail model.email) ++ (validatePassword model.password)
-
-        errorElements =
-            List.filter (\e -> e /= Nothing) allFormElements
-    in
-        (errorElements |> List.length) == 0
+    runFormValidations model
+        [ ( validateEmail, .email )
+        , ( validatePassword, .password )
+        ]
 
 
 
@@ -99,16 +95,40 @@ validateEmail string =
         emailRegex =
             "^\\w+@\\w+\\.\\w+$"
     in
-        (validateExistence string) :: (validateRegex emailRegex string) :: []
+        runPrimitiveValidations
+            string
+            [ validateExistence, validateRegex emailRegex ]
 
 
 validatePassword : String -> ValidationErrors
 validatePassword string =
-    (validateExistence string) :: (validateLength 10 string) :: []
+    runPrimitiveValidations
+        string
+        [ validateExistence, validateLength 10 ]
 
 
 
--- Primitive Validators
+-- Primitive validators
+-- FIXME - how do I annotate this
+--runFormValidations : List ( String -> List (Maybe b), Model -> String ) -> Bool
+
+
+runFormValidations model validations =
+    let
+        allFormElements =
+            List.concatMap
+                (\e -> Tuple.second e model |> Tuple.first e)
+                validations
+
+        errorElements =
+            List.filter (\e -> e /= Nothing) allFormElements
+    in
+        (errorElements |> List.length) == 0
+
+
+runPrimitiveValidations : String -> List (String -> Maybe String) -> ValidationErrors
+runPrimitiveValidations data validations =
+    List.map (\e -> e data) validations
 
 
 validateExistence : String -> Maybe String
