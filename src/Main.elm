@@ -127,6 +127,8 @@ update msg model =
 
 
 -- Form Validator
+-- FIXME - this may not need to be a tuple as the  validator is in the
+-- elem.email
 
 
 validateForm : SignupForm -> Bool
@@ -217,7 +219,18 @@ errorString errors =
             List.filter (\e -> e /= Nothing) errors
                 |> List.map (\e -> Maybe.withDefault "" e)
     in
-        String.join ", " errorList
+        if List.length errorList == 0 then
+            "no errors"
+        else
+            String.join ", " errorList
+
+
+submitButtonAttributes : Bool -> List (Html.Attribute Msg)
+submitButtonAttributes validateStatus =
+    if validateStatus then
+        [ class "btn btn-primary", type_ "submit" ]
+    else
+        [ class "btn", type_ "submit" ]
 
 
 view : Model -> Html Msg
@@ -251,85 +264,7 @@ view model =
                 , small [ class "form-text text-muted" ]
                     [ text (errorString model.signupForm.password.errors) ]
                 ]
-            , div [ class "form-group" ]
-                [ label [ for "exampleSelect1" ]
-                    [ text "Example select" ]
-                , select [ class "form-control", id "exampleSelect1" ]
-                    [ option []
-                        [ text "1" ]
-                    , option []
-                        [ text "2" ]
-                    , option []
-                        [ text "3" ]
-                    , option []
-                        [ text "4" ]
-                    , option []
-                        [ text "5" ]
-                    ]
-                ]
-            , div [ class "form-group" ]
-                [ label [ for "exampleSelect2" ]
-                    [ text "Example multiple select" ]
-                , select [ class "form-control", id "exampleSelect2", attribute "multiple" "" ]
-                    [ option []
-                        [ text "1" ]
-                    , option []
-                        [ text "2" ]
-                    , option []
-                        [ text "3" ]
-                    , option []
-                        [ text "4" ]
-                    , option []
-                        [ text "5" ]
-                    ]
-                ]
-            , div [ class "form-group" ]
-                [ label [ for "exampleTextarea" ]
-                    [ text "Example textarea" ]
-                , textarea [ class "form-control", id "exampleTextarea", attribute "rows" "3" ]
-                    []
-                ]
-            , div [ class "form-group" ]
-                [ label [ for "exampleInputFile" ]
-                    [ text "File input" ]
-                , input [ attribute "aria-describedby" "fileHelp", class "form-control-file", id "exampleInputFile", type_ "file" ]
-                    []
-                , small [ class "form-text text-muted", id "fileHelp" ]
-                    [ text "This is some placeholder block-level help text for the above input. It's a bit lighter and easily wraps to a new line." ]
-                ]
-            , fieldset [ class "form-group" ]
-                [ legend []
-                    [ text "Radio buttons" ]
-                , div [ class "form-check" ]
-                    [ label [ class "form-check-label" ]
-                        [ input [ attribute "checked" "", class "form-check-input", id "optionsRadios1", name "optionsRadios", type_ "radio", value "option1" ]
-                            []
-                        , text "Option one is this and that&mdash;be sure to include why it's great      "
-                        ]
-                    ]
-                , div [ class "form-check" ]
-                    [ label [ class "form-check-label" ]
-                        [ input [ class "form-check-input", id "optionsRadios2", name "optionsRadios", type_ "radio", value "option2" ]
-                            []
-                        , text "Option two can be something else and selecting it will deselect option one      "
-                        ]
-                    ]
-                , div [ class "form-check disabled" ]
-                    [ label [ class "form-check-label" ]
-                        [ input [ class "form-check-input", attribute "disabled" "", id "optionsRadios3", name "optionsRadios", type_ "radio", value "option3" ]
-                            []
-                        , text "Option three is disabled      "
-                        ]
-                    ]
-                ]
-            , div [ class "form-check" ]
-                [ label [ class "form-check-label" ]
-                    [ input [ class "form-check-input", type_ "checkbox" ]
-                        []
-                    , text "Check me out    "
-                    ]
-                ]
-            , button [ class "btn btn-primary", type_ "submit" ]
+            , button (submitButtonAttributes model.signupForm.validateStatus)
                 [ text "Submit" ]
             ]
         ]
