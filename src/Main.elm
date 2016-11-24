@@ -24,7 +24,7 @@ type alias ValidationErrors =
     List (Maybe String)
 
 
-type alias Model =
+type alias SignupForm =
     { email : String
     , emailErrors : ValidationErrors
     , password : String
@@ -33,13 +33,20 @@ type alias Model =
     }
 
 
+type alias Model =
+    { signupForm : SignupForm
+    }
+
+
 init : ( Model, Cmd Msg )
 init =
-    { email = ""
-    , emailErrors = validateEmail ""
-    , password = ""
-    , passwordErrors = validatePassword ""
-    , validateStatus = False
+    { signupForm =
+        { email = ""
+        , emailErrors = validateEmail ""
+        , password = ""
+        , passwordErrors = validatePassword ""
+        , validateStatus = False
+        }
     }
         ! []
 
@@ -57,29 +64,47 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UpdateEmailText text ->
-            { model
-                | email = text
-                , emailErrors = validateEmail text
-                , validateStatus = validateForm { model | email = text }
-            }
-                ! []
+            let
+                signupForm =
+                    model.signupForm
+
+                newSignupForm =
+                    { signupForm
+                        | email = text
+                        , emailErrors = validateEmail text
+                        , validateStatus = validateForm { signupForm | email = text }
+                    }
+            in
+                { model
+                    | signupForm = newSignupForm
+                }
+                    ! []
 
         UpdatePasswordText text ->
-            { model
-                | password = text
-                , passwordErrors = validatePassword text
-                , validateStatus = validateForm { model | password = text }
-            }
-                ! []
+            let
+                signupForm =
+                    model.signupForm
+
+                newSignupForm =
+                    { signupForm
+                        | password = text
+                        , passwordErrors = validatePassword text
+                        , validateStatus = validateForm { signupForm | password = text }
+                    }
+            in
+                { model
+                    | signupForm = newSignupForm
+                }
+                    ! []
 
 
 
 -- Form Validator
 
 
-validateForm : Model -> Bool
-validateForm model =
-    runFormValidations model
+validateForm : SignupForm -> Bool
+validateForm form =
+    runFormValidations form
         [ ( validateEmail, .email )
         , ( validatePassword, .password )
         ]
@@ -109,15 +134,14 @@ validatePassword string =
 
 
 -- Primitive validators
--- FIXME - how do I annotate this
---runFormValidations : List ( String -> List (Maybe b), Model -> String ) -> Bool
 
 
-runFormValidations model validations =
+runFormValidations : form -> List ( String -> ValidationErrors, form -> String ) -> Bool
+runFormValidations form validations =
     let
         allFormElements =
             List.concatMap
-                (\e -> Tuple.second e model |> Tuple.first e)
+                (\e -> Tuple.second e form |> Tuple.first e)
                 validations
 
         errorElements =
@@ -172,7 +196,7 @@ errorString errors =
 view : Model -> Html Msg
 view model =
     div [ class "container", style [ ( "width", "300px" ) ] ]
-        [ p [] [ text ("Form validate status: " ++ toString model.validateStatus) ]
+        [ p [] [ text ("Form validate status: " ++ toString model.signupForm.validateStatus) ]
         , Html.form []
             [ div [ class "form-group" ]
                 [ label [ for "exampleInputEmail1" ] [ text "Email address" ]
@@ -185,7 +209,7 @@ view model =
                     ]
                     []
                 , small [ class "form-text text-muted" ]
-                    [ text (errorString model.emailErrors) ]
+                    [ text (errorString model.signupForm.emailErrors) ]
                 ]
             , div [ class "form-group" ]
                 [ label [ for "exampleInputPassword1" ] [ text "Password" ]
@@ -198,7 +222,7 @@ view model =
                     ]
                     []
                 , small [ class "form-text text-muted" ]
-                    [ text (errorString model.passwordErrors) ]
+                    [ text (errorString model.signupForm.passwordErrors) ]
                 ]
             , div [ class "form-group" ]
                 [ label [ for "exampleSelect1" ]
