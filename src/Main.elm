@@ -178,8 +178,7 @@ submitButtonAttributes validateStatus =
 view : Model -> Html Msg
 view model =
     div [ class "container", style [ ( "width", "300px" ) ] ]
-        [ p [] [ text ("Form validate status: " ++ toString model.signupForm.validateStatus) ]
-        , Html.form []
+        [ Html.form []
             [ div [ class "form-group" ]
                 [ label [ for "exampleInputEmail1" ] [ text "Email address" ]
                 , input
@@ -206,7 +205,8 @@ view model =
                 , small [ class "form-text text-muted" ]
                     [ text (errorString model.signupForm.password.errors) ]
                 ]
-            , button (submitButtonAttributes model.signupForm.validateStatus)
+            , button
+                (submitButtonAttributes model.signupForm.validateStatus)
                 [ text "Submit" ]
             ]
         ]
