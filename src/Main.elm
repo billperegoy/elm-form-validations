@@ -20,15 +20,15 @@ main =
 -- Model
 
 
+type alias Model =
+    { signupForm : SignupForm
+    }
+
+
 type alias SignupForm =
     { email : FormElement
     , password : FormElement
     , validateStatus : Bool
-    }
-
-
-type alias Model =
-    { signupForm : SignupForm
     }
 
 
