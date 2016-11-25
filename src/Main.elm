@@ -76,55 +76,61 @@ updateFormElement formElement text =
     }
 
 
+signupFormWithNewEmail : Model -> String -> SignupForm
+signupFormWithNewEmail model text =
+    let
+        signupForm : SignupForm
+        signupForm =
+            model.signupForm
+
+        newFormElement : FormElement
+        newFormElement =
+            updateFormElement signupForm.email text
+    in
+        { signupForm
+            | email = newFormElement
+            , validateStatus =
+                validateForm { signupForm | email = newFormElement }
+        }
+
+
+signupFormWithNewPassword : Model -> String -> SignupForm
+signupFormWithNewPassword model text =
+    let
+        signupForm : SignupForm
+        signupForm =
+            model.signupForm
+
+        newFormElement : FormElement
+        newFormElement =
+            updateFormElement signupForm.password text
+    in
+        { signupForm
+            | password = newFormElement
+            , validateStatus =
+                validateForm { signupForm | password = newFormElement }
+        }
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UpdateEmailText text ->
-            let
-                signupForm =
-                    model.signupForm
-
-                newFormElement =
-                    updateFormElement signupForm.email text
-
-                newSignupForm =
-                    { signupForm
-                        | email = newFormElement
-                        , validateStatus =
-                            validateForm { signupForm | email = newFormElement }
-                    }
-            in
-                { model | signupForm = newSignupForm } ! []
+            { model | signupForm = signupFormWithNewEmail model text } ! []
 
         UpdatePasswordText text ->
-            let
-                signupForm =
-                    model.signupForm
-
-                newFormElement =
-                    updateFormElement signupForm.password text
-
-                newSignupForm =
-                    { signupForm
-                        | password = newFormElement
-                        , validateStatus =
-                            validateForm { signupForm | password = newFormElement }
-                    }
-            in
-                { model | signupForm = newSignupForm } ! []
+            { model | signupForm = signupFormWithNewPassword model text } ! []
 
 
 
 -- Form Validator
--- FIXME - this may not need to be a tuple as the  validator is in the
--- elem.email
 
 
 validateForm : SignupForm -> Bool
 validateForm form =
     runFormValidations form
-        [ ( validateEmail, (\elem -> elem.email.input) )
-        , ( validatePassword, (\elem -> elem.password.input) )
+        [ ( validateEmail, (\formElement -> formElement.email.input) )
+        , ( validatePassword, (\formElement -> formElement.password.input) )
         ]
 
 
