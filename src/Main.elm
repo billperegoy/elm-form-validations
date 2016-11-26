@@ -26,44 +26,40 @@ type alias Model =
     }
 
 
-init : ( Model, Cmd Msg )
-init =
-    { signupForm =
-        { elements =
-            Dict.empty
-                |> Dict.insert "email" initEmail
-                |> Dict.insert "password" initPassword
-        , validateStatus = False
-        }
-    }
-        ! []
-
-
-
--- FIXME - not using this yet
-
-
-fields : List ( String, String -> Forms.ValidationErrors )
+fields : List ( String, Forms.FormValidator )
 fields =
     [ ( "email", validateEmail )
     , ( "password", validatePassword )
     ]
 
 
-initEmail : Forms.FormElement
-initEmail =
-    { input = ""
-    , errors = (validateEmail "")
-    , validator = validateEmail
+init : ( Model, Cmd Msg )
+init =
+    { signupForm = Forms.initForm fields
     }
+        ! []
 
 
-initPassword : Forms.FormElement
-initPassword =
-    { input = ""
-    , errors = (validatePassword "")
-    , validator = validatePassword
-    }
+
+-- Field Validators
+
+
+validateEmail : String -> Forms.ValidationErrors
+validateEmail string =
+    let
+        emailRegex =
+            "^\\w+@\\w+\\.\\w+$"
+    in
+        Forms.runPrimitiveValidations
+            string
+            [ Forms.validateExistence, Forms.validateRegex emailRegex ]
+
+
+validatePassword : String -> Forms.ValidationErrors
+validatePassword string =
+    Forms.runPrimitiveValidations
+        string
+        [ Forms.validateExistence, Forms.validateLength 10 ]
 
 
 
@@ -89,28 +85,6 @@ update msg model =
                 | signupForm = Forms.updateFormInput model.signupForm "password" text
             }
                 ! []
-
-
-
--- Field Validators
-
-
-validateEmail : String -> Forms.ValidationErrors
-validateEmail string =
-    let
-        emailRegex =
-            "^\\w+@\\w+\\.\\w+$"
-    in
-        Forms.runPrimitiveValidations
-            string
-            [ Forms.validateExistence, Forms.validateRegex emailRegex ]
-
-
-validatePassword : String -> Forms.ValidationErrors
-validatePassword string =
-    Forms.runPrimitiveValidations
-        string
-        [ Forms.validateExistence, Forms.validateLength 10 ]
 
 
 

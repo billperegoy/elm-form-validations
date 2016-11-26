@@ -12,6 +12,10 @@ type alias FormElements =
     Dict String FormElement
 
 
+type alias FormValidator =
+    String -> ValidationErrors
+
+
 type alias Form =
     { elements : FormElements
     , validateStatus : Bool
@@ -23,6 +27,25 @@ type alias FormElement =
     , errors : ValidationErrors
     , validator : String -> ValidationErrors
     }
+
+
+initFormElement : ( String, String -> ValidationErrors ) -> FormElement
+initFormElement field =
+    { input = ""
+    , errors = "" |> Tuple.second field
+    , validator = Tuple.second field
+    }
+
+
+initForm : List ( String, String -> ValidationErrors ) -> Form
+initForm fields =
+    let
+        elements =
+            List.foldl (\e -> Dict.insert (Tuple.first e) (initFormElement e)) Dict.empty fields
+    in
+        { elements = elements
+        , validateStatus = False
+        }
 
 
 updateFormInput : Form -> String -> String -> Form
