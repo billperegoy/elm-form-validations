@@ -4,6 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import FormValidation exposing (..)
+import Dict exposing (..)
 
 
 main : Program Never Model Msg
@@ -21,22 +22,17 @@ main =
 
 
 type alias Model =
-    { signupForm : SignupForm
-    }
-
-
-type alias SignupForm =
-    { email : FormElement
-    , password : FormElement
-    , validateStatus : Bool
+    { signupForm : Form
     }
 
 
 init : ( Model, Cmd Msg )
 init =
     { signupForm =
-        { email = initEmail
-        , password = initPassword
+        { elements =
+            Dict.empty
+                |> Dict.insert "email" initEmail
+                |> Dict.insert "password" initPassword
         , validateStatus = False
         }
     }
@@ -68,66 +64,24 @@ type Msg
     | UpdatePasswordText String
 
 
-updateFormElement : FormElement -> String -> FormElement
-updateFormElement formElement text =
-    { formElement
-        | input = text
-        , errors = formElement.validator text
-    }
-
-
-signupFormWithNewEmail : SignupForm -> String -> SignupForm
-signupFormWithNewEmail signupForm text =
-    let
-        newFormElement : FormElement
-        newFormElement =
-            updateFormElement signupForm.email text
-    in
-        { signupForm
-            | email = newFormElement
-            , validateStatus =
-                validateForm { signupForm | email = newFormElement }
-        }
-
-
-signupFormWithNewPassword : SignupForm -> String -> SignupForm
-signupFormWithNewPassword signupForm text =
-    let
-        newFormElement : FormElement
-        newFormElement =
-            updateFormElement signupForm.password text
-    in
-        { signupForm
-            | password = newFormElement
-            , validateStatus =
-                validateForm { signupForm | password = newFormElement }
-        }
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UpdateEmailText text ->
-            { model | signupForm = signupFormWithNewEmail model.signupForm text } ! []
+            { model
+                | signupForm = updateFormInput model.signupForm "email" text
+            }
+                ! []
 
         UpdatePasswordText text ->
-            { model | signupForm = signupFormWithNewPassword model.signupForm text } ! []
+            { model
+                | signupForm = updateFormInput model.signupForm "password" text
+            }
+                ! []
 
 
 
--- Form Validator
-
-
-validateForm : SignupForm -> Bool
-validateForm form =
-    runFormValidations form
-        [ ( validateEmail, (\formElement -> formElement.email.input) )
-        , ( validatePassword, (\formElement -> formElement.password.input) )
-        ]
-
-
-
--- Form Element Validators
+-- Field Validators
 
 
 validateEmail : String -> ValidationErrors
@@ -150,19 +104,6 @@ validatePassword string =
 
 
 -- View
-
-
-errorString : ValidationErrors -> String
-errorString errors =
-    let
-        errorList =
-            List.filter (\e -> e /= Nothing) errors
-                |> List.map (\e -> Maybe.withDefault "" e)
-    in
-        if List.length errorList == 0 then
-            "no errors"
-        else
-            String.join ", " errorList
 
 
 submitButtonAttributes : Bool -> List (Html.Attribute Msg)
@@ -188,7 +129,7 @@ view model =
                     ]
                     []
                 , small [ class "form-text text-muted" ]
-                    [ text (errorString model.signupForm.email.errors) ]
+                    [ text (lookupErrorValue model.signupForm "email" |> errorString) ]
                 ]
             , div [ class "form-group" ]
                 [ label [ for "exampleInputPassword1" ] [ text "Password" ]
@@ -201,7 +142,7 @@ view model =
                     ]
                     []
                 , small [ class "form-text text-muted" ]
-                    [ text (errorString model.signupForm.password.errors) ]
+                    [ text (lookupErrorValue model.signupForm "password" |> errorString) ]
                 ]
             , button
                 (submitButtonAttributes model.signupForm.validateStatus)

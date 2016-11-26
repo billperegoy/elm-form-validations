@@ -1,10 +1,21 @@
 module FormValidation exposing (..)
 
 import Regex
+import Dict exposing (..)
 
 
 type alias ValidationErrors =
     List (Maybe String)
+
+
+type alias FormElements =
+    Dict String FormElement
+
+
+type alias Form =
+    { elements : FormElements
+    , validateStatus : Bool
+    }
 
 
 type alias FormElement =
@@ -14,20 +25,93 @@ type alias FormElement =
     }
 
 
+updateFormInput : Form -> String -> String -> Form
+updateFormInput form name value =
+    let
+        formElement =
+            Dict.get name form.elements
+    in
+        case formElement of
+            Just f ->
+                let
+                    newFormElement =
+                        { f
+                            | input = value
+                            , errors = f.validator value
+                        }
+
+                    newFormElements =
+                        Dict.insert name
+                            newFormElement
+                            form.elements
+                in
+                    { form
+                        | elements = newFormElements
+                        , validateStatus = validateForm { form | elements = newFormElements }
+                    }
+
+            Nothing ->
+                form
+
+
+lookupInputValue : Form -> String -> String
+lookupInputValue form name =
+    let
+        lookupValue =
+            Dict.get name form.elements
+    in
+        case lookupValue of
+            Just value ->
+                value.input
+
+            Nothing ->
+                ""
+
+
+lookupErrorValue : Form -> String -> ValidationErrors
+lookupErrorValue form name =
+    let
+        lookupValue =
+            Dict.get name form.elements
+    in
+        case lookupValue of
+            Just value ->
+                value.errors
+
+            Nothing ->
+                []
+
+
+errorString : ValidationErrors -> String
+errorString errors =
+    let
+        errorList =
+            List.filter (\e -> e /= Nothing) errors
+                |> List.map (\e -> Maybe.withDefault "" e)
+    in
+        if List.length errorList == 0 then
+            "no errors"
+        else
+            String.join ", " errorList
+
+
 
 -- Primitive validators
 
 
-runFormValidations : form -> List ( String -> ValidationErrors, form -> String ) -> Bool
-runFormValidations form validations =
-    let
-        allFormElements =
-            List.concatMap
-                (\e -> Tuple.second e form |> Tuple.first e)
-                validations
+validateSingle : FormElement -> ValidationErrors
+validateSingle formElement =
+    formElement.input |> formElement.validator
 
+
+validateForm : Form -> Bool
+validateForm form =
+    let
         errorElements =
-            List.filter (\e -> e /= Nothing) allFormElements
+            List.concatMap
+                (\elem -> validateSingle (Tuple.second elem))
+                (Dict.toList form.elements)
+                |> List.filter (\e -> e /= Nothing)
     in
         (errorElements |> List.length) == 0
 
