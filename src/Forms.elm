@@ -1,4 +1,4 @@
-module FormValidation exposing (..)
+module Forms exposing (..)
 
 import Regex
 import Dict exposing (..)

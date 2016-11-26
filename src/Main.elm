@@ -3,7 +3,7 @@ module Main exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import FormValidation exposing (..)
+import Forms
 import Dict exposing (..)
 
 
@@ -22,7 +22,7 @@ main =
 
 
 type alias Model =
-    { signupForm : Form
+    { signupForm : Forms.Form
     }
 
 
@@ -39,7 +39,18 @@ init =
         ! []
 
 
-initEmail : FormElement
+
+-- FIXME - not using this yet
+
+
+fields : List ( String, String -> Forms.ValidationErrors )
+fields =
+    [ ( "email", validateEmail )
+    , ( "password", validatePassword )
+    ]
+
+
+initEmail : Forms.FormElement
 initEmail =
     { input = ""
     , errors = (validateEmail "")
@@ -47,7 +58,7 @@ initEmail =
     }
 
 
-initPassword : FormElement
+initPassword : Forms.FormElement
 initPassword =
     { input = ""
     , errors = (validatePassword "")
@@ -69,13 +80,13 @@ update msg model =
     case msg of
         UpdateEmailText text ->
             { model
-                | signupForm = updateFormInput model.signupForm "email" text
+                | signupForm = Forms.updateFormInput model.signupForm "email" text
             }
                 ! []
 
         UpdatePasswordText text ->
             { model
-                | signupForm = updateFormInput model.signupForm "password" text
+                | signupForm = Forms.updateFormInput model.signupForm "password" text
             }
                 ! []
 
@@ -84,22 +95,22 @@ update msg model =
 -- Field Validators
 
 
-validateEmail : String -> ValidationErrors
+validateEmail : String -> Forms.ValidationErrors
 validateEmail string =
     let
         emailRegex =
             "^\\w+@\\w+\\.\\w+$"
     in
-        runPrimitiveValidations
+        Forms.runPrimitiveValidations
             string
-            [ validateExistence, validateRegex emailRegex ]
+            [ Forms.validateExistence, Forms.validateRegex emailRegex ]
 
 
-validatePassword : String -> ValidationErrors
+validatePassword : String -> Forms.ValidationErrors
 validatePassword string =
-    runPrimitiveValidations
+    Forms.runPrimitiveValidations
         string
-        [ validateExistence, validateLength 10 ]
+        [ Forms.validateExistence, Forms.validateLength 10 ]
 
 
 
@@ -129,7 +140,7 @@ view model =
                     ]
                     []
                 , small [ class "form-text text-muted" ]
-                    [ text (lookupErrorValue model.signupForm "email" |> errorString) ]
+                    [ text (Forms.lookupErrorValue model.signupForm "email" |> Forms.errorString) ]
                 ]
             , div [ class "form-group" ]
                 [ label [ for "exampleInputPassword1" ] [ text "Password" ]
@@ -142,7 +153,7 @@ view model =
                     ]
                     []
                 , small [ class "form-text text-muted" ]
-                    [ text (lookupErrorValue model.signupForm "password" |> errorString) ]
+                    [ text (Forms.lookupErrorValue model.signupForm "password" |> Forms.errorString) ]
                 ]
             , button
                 (submitButtonAttributes model.signupForm.validateStatus)
