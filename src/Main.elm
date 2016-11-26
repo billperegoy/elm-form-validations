@@ -76,13 +76,9 @@ updateFormElement formElement text =
     }
 
 
-signupFormWithNewEmail : Model -> String -> SignupForm
-signupFormWithNewEmail model text =
+signupFormWithNewEmail : SignupForm -> String -> SignupForm
+signupFormWithNewEmail signupForm text =
     let
-        signupForm : SignupForm
-        signupForm =
-            model.signupForm
-
         newFormElement : FormElement
         newFormElement =
             updateFormElement signupForm.email text
@@ -94,13 +90,9 @@ signupFormWithNewEmail model text =
         }
 
 
-signupFormWithNewPassword : Model -> String -> SignupForm
-signupFormWithNewPassword model text =
+signupFormWithNewPassword : SignupForm -> String -> SignupForm
+signupFormWithNewPassword signupForm text =
     let
-        signupForm : SignupForm
-        signupForm =
-            model.signupForm
-
         newFormElement : FormElement
         newFormElement =
             updateFormElement signupForm.password text
@@ -116,10 +108,10 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UpdateEmailText text ->
-            { model | signupForm = signupFormWithNewEmail model text } ! []
+            { model | signupForm = signupFormWithNewEmail model.signupForm text } ! []
 
         UpdatePasswordText text ->
-            { model | signupForm = signupFormWithNewPassword model text } ! []
+            { model | signupForm = signupFormWithNewPassword model.signupForm text } ! []
 
 
 
