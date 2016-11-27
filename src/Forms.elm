@@ -77,18 +77,9 @@ updateFormInput form name value =
                 form
 
 
-lookupInputValue : Form -> String -> String
-lookupInputValue form name =
-    let
-        lookupValue =
-            Dict.get name form.elements
-    in
-        case lookupValue of
-            Just value ->
-                value.input
-
-            Nothing ->
-                ""
+errors : Form -> String -> String
+errors form name =
+    lookupErrorValue form name |> errorString
 
 
 lookupErrorValue : Form -> String -> ValidationErrors
@@ -166,3 +157,8 @@ validateRegex regex string =
         Nothing
     else
         Just "invalid string format"
+
+
+validateStatus : Form -> Bool
+validateStatus form =
+    form.validateStatus

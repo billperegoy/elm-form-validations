@@ -4,7 +4,6 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Forms
-import Dict exposing (..)
 
 
 main : Program Never Model Msg
@@ -26,8 +25,8 @@ type alias Model =
     }
 
 
-fields : List ( String, Forms.FormValidator )
-fields =
+signupFormFields : List ( String, Forms.FormValidator )
+signupFormFields =
     [ ( "email", validateEmail )
     , ( "password", validatePassword )
     ]
@@ -35,7 +34,7 @@ fields =
 
 init : ( Model, Cmd Msg )
 init =
-    { signupForm = Forms.initForm fields
+    { signupForm = Forms.initForm signupFormFields
     }
         ! []
 
@@ -76,13 +75,15 @@ update msg model =
     case msg of
         UpdateEmailText text ->
             { model
-                | signupForm = Forms.updateFormInput model.signupForm "email" text
+                | signupForm =
+                    Forms.updateFormInput model.signupForm "email" text
             }
                 ! []
 
         UpdatePasswordText text ->
             { model
-                | signupForm = Forms.updateFormInput model.signupForm "password" text
+                | signupForm =
+                    Forms.updateFormInput model.signupForm "password" text
             }
                 ! []
 
@@ -114,7 +115,7 @@ view model =
                     ]
                     []
                 , small [ class "form-text text-muted" ]
-                    [ text (Forms.lookupErrorValue model.signupForm "email" |> Forms.errorString) ]
+                    [ text (Forms.errors model.signupForm "email") ]
                 ]
             , div [ class "form-group" ]
                 [ label [ for "exampleInputPassword1" ] [ text "Password" ]
@@ -127,10 +128,10 @@ view model =
                     ]
                     []
                 , small [ class "form-text text-muted" ]
-                    [ text (Forms.lookupErrorValue model.signupForm "password" |> Forms.errorString) ]
+                    [ text (Forms.errors model.signupForm "password") ]
                 ]
             , button
-                (submitButtonAttributes model.signupForm.validateStatus)
+                (submitButtonAttributes (Forms.validateStatus model.signupForm))
                 [ text "Submit" ]
             ]
         ]
