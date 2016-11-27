@@ -1,7 +1,20 @@
-module Forms exposing (..)
+module Forms
+    exposing
+        ( Form
+        , FormValidator
+        , ValidationErrors
+        , errors
+        , initForm
+        , runPrimitiveValidations
+        , updateFormInput
+        , validateLength
+        , validateExistence
+        , validateRegex
+        , validateStatus
+        )
 
 import Regex
-import Dict exposing (..)
+import Dict
 
 
 type alias ValidationErrors =
@@ -9,7 +22,7 @@ type alias ValidationErrors =
 
 
 type alias FormElements =
-    Dict String FormElement
+    Dict.Dict String FormElement
 
 
 type alias FormValidator =
@@ -29,7 +42,7 @@ type alias FormElement =
     }
 
 
-initFormElement : ( String, String -> ValidationErrors ) -> FormElement
+initFormElement : ( String, FormValidator ) -> FormElement
 initFormElement field =
     { input = ""
     , errors = "" |> Tuple.second field
@@ -41,11 +54,12 @@ initForm : List ( String, String -> ValidationErrors ) -> Form
 initForm fields =
     let
         elements =
-            List.foldl (\e -> Dict.insert (Tuple.first e) (initFormElement e)) Dict.empty fields
+            List.foldl
+                (\e -> Dict.insert (Tuple.first e) (initFormElement e))
+                Dict.empty
+                fields
     in
-        { elements = elements
-        , validateStatus = False
-        }
+        Form elements False
 
 
 updateFormInput : Form -> String -> String -> Form
@@ -55,12 +69,12 @@ updateFormInput form name value =
             Dict.get name form.elements
     in
         case formElement of
-            Just f ->
+            Just element ->
                 let
                     newFormElement =
-                        { f
+                        { element
                             | input = value
-                            , errors = f.validator value
+                            , errors = element.validator value
                         }
 
                     newFormElements =
@@ -70,7 +84,8 @@ updateFormInput form name value =
                 in
                     { form
                         | elements = newFormElements
-                        , validateStatus = validateForm { form | elements = newFormElements }
+                        , validateStatus =
+                            validateForm { form | elements = newFormElements }
                     }
 
             Nothing ->
