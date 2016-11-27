@@ -115,14 +115,6 @@ update msg model =
 -- View
 
 
-submitButtonAttributes : Bool -> List (Html.Attribute Msg)
-submitButtonAttributes validateStatus =
-    if validateStatus then
-        [ class "btn btn-primary", type_ "submit" ]
-    else
-        [ class "btn", type_ "submit" ]
-
-
 emailFormElement : Forms.Form -> Html Msg
 emailFormElement form =
     div [ class "form-group" ]
@@ -171,6 +163,14 @@ ageFormElement form =
         , small [ class "form-text text-muted" ]
             [ text (Forms.errors form "age") ]
         ]
+
+
+submitButtonAttributes : Bool -> List (Html.Attribute Msg)
+submitButtonAttributes validateStatus =
+    if validateStatus then
+        [ class "btn btn-primary", type_ "submit" ]
+    else
+        [ class "btn", type_ "submit" ]
 
 
 signupFormSubmitButton : Forms.Form -> Html Msg
