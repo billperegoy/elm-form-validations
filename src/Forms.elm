@@ -6,11 +6,12 @@ module Forms
         , errors
         , formValue
         , initForm
-        , runPrimitiveValidations
+        , validateField
         , updateFormInput
         , validateLength
         , validateExistence
         , validateNumericality
+        , validateNumericRange
         , validateRegex
         , validateStatus
         )
@@ -161,8 +162,8 @@ validateForm form =
         (errorElements |> List.length) == 0
 
 
-runPrimitiveValidations : String -> List (String -> Maybe String) -> ValidationErrors
-runPrimitiveValidations data validations =
+validateField : String -> List (String -> Maybe String) -> ValidationErrors
+validateField data validations =
     List.map (\e -> e data) validations
 
 
@@ -202,10 +203,31 @@ validateRegex regex string =
 validateNumericality : String -> Maybe String
 validateNumericality string =
     let
-        numericRegex =
-            Regex.regex "^[0-9]+$"
+        intValue =
+            String.toInt string
     in
-        if Regex.contains numericRegex string then
-            Nothing
-        else
-            Just "must be numeric"
+        case intValue of
+            Ok value ->
+                Nothing
+
+            Err _ ->
+                Just "must be numeric"
+
+
+validateNumericRange : Int -> Int -> String -> Maybe String
+validateNumericRange min max string =
+    let
+        intValue =
+            String.toInt string
+    in
+        case intValue of
+            Ok value ->
+                if value < min then
+                    Just ("must be >= " ++ toString min)
+                else if value > max then
+                    Just ("must be <= " ++ toString max)
+                else
+                    Nothing
+
+            Err _ ->
+                Just ("must be between " ++ toString min ++ " and " ++ toString max)

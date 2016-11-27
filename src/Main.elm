@@ -50,23 +50,30 @@ validateEmail string =
         emailRegex =
             "^\\w+@\\w+\\.\\w+$"
     in
-        Forms.runPrimitiveValidations
+        Forms.validateField
             string
-            [ Forms.validateExistence, Forms.validateRegex emailRegex ]
+            [ Forms.validateExistence
+            , Forms.validateRegex emailRegex
+            ]
 
 
 validatePassword : String -> Forms.ValidationErrors
 validatePassword string =
-    Forms.runPrimitiveValidations
+    Forms.validateField
         string
-        [ Forms.validateExistence, Forms.validateLength 10 ]
+        [ Forms.validateExistence
+        , Forms.validateLength 10
+        ]
 
 
 validateAge : String -> Forms.ValidationErrors
 validateAge string =
-    Forms.runPrimitiveValidations
+    Forms.validateField
         string
-        [ Forms.validateExistence, Forms.validateNumericality ]
+        [ Forms.validateExistence
+        , Forms.validateNumericality
+        , Forms.validateNumericRange 21 88
+        ]
 
 
 
