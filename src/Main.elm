@@ -29,6 +29,7 @@ signupFormFields : List ( String, Forms.FormValidator )
 signupFormFields =
     [ ( "email", validateEmail )
     , ( "password", validatePassword )
+    , ( "age", validateAge )
     ]
 
 
@@ -61,6 +62,13 @@ validatePassword string =
         [ Forms.validateExistence, Forms.validateLength 10 ]
 
 
+validateAge : String -> Forms.ValidationErrors
+validateAge string =
+    Forms.runPrimitiveValidations
+        string
+        [ Forms.validateExistence, Forms.validateNumericality ]
+
+
 
 -- Update
 
@@ -68,6 +76,7 @@ validatePassword string =
 type Msg
     = UpdateEmailText String
     | UpdatePasswordText String
+    | UpdateAgeText String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -87,6 +96,13 @@ update msg model =
             }
                 ! []
 
+        UpdateAgeText text ->
+            { model
+                | signupForm =
+                    Forms.updateFormInput model.signupForm "age" text
+            }
+                ! []
+
 
 
 -- View
@@ -100,39 +116,71 @@ submitButtonAttributes validateStatus =
         [ class "btn", type_ "submit" ]
 
 
+emailFormElement : Forms.Form -> Html Msg
+emailFormElement form =
+    div [ class "form-group" ]
+        [ label [ for "exampleInputEmail1" ] [ text "Email address" ]
+        , input
+            [ class "form-control"
+            , id "exampleInputEmail1"
+            , placeholder "Enter email"
+            , type_ "email"
+            , onInput UpdateEmailText
+            ]
+            []
+        , small [ class "form-text text-muted" ]
+            [ text (Forms.errors form "email") ]
+        ]
+
+
+passwordFormElement : Forms.Form -> Html Msg
+passwordFormElement form =
+    div [ class "form-group" ]
+        [ label [ for "exampleInputPassword" ] [ text "Password" ]
+        , input
+            [ class "form-control"
+            , id "exampleInputPassword"
+            , placeholder "Enter password"
+            , type_ "password"
+            , onInput UpdatePasswordText
+            ]
+            []
+        , small [ class "form-text text-muted" ]
+            [ text (Forms.errors form "password") ]
+        ]
+
+
+ageFormElement : Forms.Form -> Html Msg
+ageFormElement form =
+    div [ class "form-group" ]
+        [ label [ for "exampleInputAge" ] [ text "Age" ]
+        , input
+            [ class "form-control"
+            , id "exampleInputAge"
+            , placeholder "Age"
+            , onInput UpdateAgeText
+            ]
+            []
+        , small [ class "form-text text-muted" ]
+            [ text (Forms.errors form "age") ]
+        ]
+
+
+signupFormSubmitButton : Forms.Form -> Html Msg
+signupFormSubmitButton form =
+    button
+        (submitButtonAttributes (Forms.validateStatus form))
+        [ text "Submit" ]
+
+
 view : Model -> Html Msg
 view model =
     div [ class "container", style [ ( "width", "300px" ) ] ]
         [ Html.form []
-            [ div [ class "form-group" ]
-                [ label [ for "exampleInputEmail1" ] [ text "Email address" ]
-                , input
-                    [ class "form-control"
-                    , id "exampleInputEmail1"
-                    , placeholder "Enter email"
-                    , type_ "email"
-                    , onInput UpdateEmailText
-                    ]
-                    []
-                , small [ class "form-text text-muted" ]
-                    [ text (Forms.errors model.signupForm "email") ]
-                ]
-            , div [ class "form-group" ]
-                [ label [ for "exampleInputPassword1" ] [ text "Password" ]
-                , input
-                    [ class "form-control"
-                    , id "exampleInputPassword1"
-                    , placeholder "Password"
-                    , type_ "password"
-                    , onInput UpdatePasswordText
-                    ]
-                    []
-                , small [ class "form-text text-muted" ]
-                    [ text (Forms.errors model.signupForm "password") ]
-                ]
-            , button
-                (submitButtonAttributes (Forms.validateStatus model.signupForm))
-                [ text "Submit" ]
+            [ emailFormElement model.signupForm
+            , passwordFormElement model.signupForm
+            , ageFormElement model.signupForm
+            , signupFormSubmitButton model.signupForm
             ]
         ]
 

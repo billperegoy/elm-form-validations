@@ -10,6 +10,7 @@ module Forms
         , updateFormInput
         , validateLength
         , validateExistence
+        , validateNumericality
         , validateRegex
         , validateStatus
         )
@@ -140,7 +141,7 @@ formValue form name =
 
 
 
--- Primitive validators
+-- Validation
 
 
 validateSingle : FormElement -> ValidationErrors
@@ -163,6 +164,15 @@ validateForm form =
 runPrimitiveValidations : String -> List (String -> Maybe String) -> ValidationErrors
 runPrimitiveValidations data validations =
     List.map (\e -> e data) validations
+
+
+validateStatus : Form -> Bool
+validateStatus form =
+    form.validateStatus
+
+
+
+-- Primitive validators
 
 
 validateExistence : String -> Maybe String
@@ -189,6 +199,13 @@ validateRegex regex string =
         Just "invalid string format"
 
 
-validateStatus : Form -> Bool
-validateStatus form =
-    form.validateStatus
+validateNumericality : String -> Maybe String
+validateNumericality string =
+    let
+        numericRegex =
+            Regex.regex "^[0-9]+$"
+    in
+        if Regex.contains numericRegex string then
+            Nothing
+        else
+            Just "must be numeric"
