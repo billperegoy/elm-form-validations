@@ -50,7 +50,7 @@ initFormElement field =
     }
 
 
-initForm : List ( String, String -> ValidationErrors ) -> Form
+initForm : List ( String, FormValidator ) -> Form
 initForm fields =
     let
         elements =
