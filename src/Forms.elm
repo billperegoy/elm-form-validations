@@ -4,6 +4,7 @@ module Forms
         , FormValidator
         , ValidationErrors
         , errors
+        , formValue
         , initForm
         , runPrimitiveValidations
         , updateFormInput
@@ -122,6 +123,20 @@ errorString errors =
             "no errors"
         else
             String.join ", " errorList
+
+
+formValue : Form -> String -> String
+formValue form name =
+    let
+        lookupValue =
+            Dict.get name form.elements
+    in
+        case lookupValue of
+            Just value ->
+                value.input
+
+            Nothing ->
+                ""
 
 
 
