@@ -25,11 +25,11 @@ type alias Model =
     }
 
 
-signupFormFields : List ( String, Forms.FormValidator )
+signupFormFields : List ( String, List Forms.FieldValidator )
 signupFormFields =
-    [ ( "email", validateEmail )
-    , ( "password", validatePassword )
-    , ( "age", validateAge )
+    [ ( "email", emailValidations )
+    , ( "password", passwordValidations )
+    , ( "age", ageValidations )
     ]
 
 
@@ -44,36 +44,31 @@ init =
 -- Field Validators
 
 
-validateEmail : String -> Forms.ValidationErrors
-validateEmail string =
-    let
-        emailRegex =
-            "^\\w+@\\w+\\.\\w+$"
-    in
-        Forms.validateField
-            string
-            [ Forms.validateExistence
-            , Forms.validateRegex emailRegex
-            ]
+emailRegex : String
+emailRegex =
+    "^\\w+@\\w+\\.\\w+$"
 
 
-validatePassword : String -> Forms.ValidationErrors
-validatePassword string =
-    Forms.validateField
-        string
-        [ Forms.validateExistence
-        , Forms.validateLength 10
-        ]
+emailValidations : List Forms.FieldValidator
+emailValidations =
+    [ Forms.validateExistence
+    , Forms.validateRegex emailRegex
+    ]
 
 
-validateAge : String -> Forms.ValidationErrors
-validateAge string =
-    Forms.validateField
-        string
-        [ Forms.validateExistence
-        , Forms.validateNumericality
-        , Forms.validateNumericRange 21 88
-        ]
+passwordValidations : List Forms.FieldValidator
+passwordValidations =
+    [ Forms.validateExistence
+    , Forms.validateLength 10
+    ]
+
+
+ageValidations : List Forms.FieldValidator
+ageValidations =
+    [ Forms.validateExistence
+    , Forms.validateNumericality
+    , Forms.validateNumericRange 21 88
+    ]
 
 
 

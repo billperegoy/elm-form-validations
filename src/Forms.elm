@@ -1,8 +1,8 @@
 module Forms
     exposing
-        ( Form
-        , FormValidator
-        , ValidationErrors
+        ( FieldValidator
+        , Form
+        , ValidationError
         , errors
         , formValue
         , initForm
@@ -20,16 +20,20 @@ import Regex
 import Dict
 
 
+type alias ValidationError =
+    Maybe String
+
+
 type alias ValidationErrors =
-    List (Maybe String)
+    List ValidationError
 
 
 type alias FormElements =
     Dict.Dict String FormElement
 
 
-type alias FormValidator =
-    String -> ValidationErrors
+type alias FieldValidator =
+    String -> ValidationError
 
 
 type alias Form =
@@ -41,19 +45,19 @@ type alias Form =
 type alias FormElement =
     { input : String
     , errors : ValidationErrors
-    , validator : String -> ValidationErrors
+    , validator : List FieldValidator
     }
 
 
-initFormElement : ( String, FormValidator ) -> FormElement
+initFormElement : ( String, List FieldValidator ) -> FormElement
 initFormElement field =
     { input = ""
-    , errors = "" |> Tuple.second field
+    , errors = validateField "" (Tuple.second field)
     , validator = Tuple.second field
     }
 
 
-initForm : List ( String, FormValidator ) -> Form
+initForm : List ( String, List FieldValidator ) -> Form
 initForm fields =
     let
         elements =
@@ -77,7 +81,7 @@ updateFormInput form name value =
                     newFormElement =
                         { element
                             | input = value
-                            , errors = element.validator value
+                            , errors = validateField value element.validator
                         }
 
                     newFormElements =
@@ -147,7 +151,7 @@ formValue form name =
 
 validateSingle : FormElement -> ValidationErrors
 validateSingle formElement =
-    formElement.input |> formElement.validator
+    validateField formElement.input formElement.validator
 
 
 validateForm : Form -> Bool
