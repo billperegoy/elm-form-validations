@@ -231,3 +231,22 @@ validateNumericRange min max string =
 
             Err _ ->
                 Just ("must be between " ++ toString min ++ " and " ++ toString max)
+
+
+
+{--
+enhancements:
+
+allow custom error messages
+acceptance -checkbox is checked  (not nil)`
+confirmation - two fields the same
+exclusion - not within a set of values
+inclusion -in a set of values
+length - min and max
+numeriality - ony integer or float
+other compariosns vs.range (odd even, lt, gt, etc.)
+absence - does this make sense in my scenario?
+uniquemness - do I need a backend?
+conditional validation? - form field dependencies?
+ability to get raw messages as well as string join
+ --}
