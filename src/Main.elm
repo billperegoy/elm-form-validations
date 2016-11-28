@@ -44,16 +44,15 @@ init =
 -- Field Validators
 
 
-emailRegex : String
-emailRegex =
-    "^\\w+@\\w+\\.\\w+$"
-
-
 emailValidations : List Forms.FieldValidator
 emailValidations =
-    [ Forms.validateExistence
-    , Forms.validateRegex emailRegex
-    ]
+    let
+        emailRegex =
+            "^\\w+@\\w+\\.\\w+$"
+    in
+        [ Forms.validateExistence
+        , Forms.validateRegex emailRegex
+        ]
 
 
 passwordValidations : List Forms.FieldValidator
