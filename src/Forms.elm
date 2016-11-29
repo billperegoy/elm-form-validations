@@ -286,16 +286,3 @@ validateIsOneOf matches string =
         Nothing
     else
         Just ("must match one of (" ++ String.join ", " matches ++ ")")
-
-
-
-{--
-enhancements:
-
-allow custom error messages
-acceptance -checkbox is checked  (not nil)`
-confirmation - two fields the same
-numeriality - ony integer or float
-uniquemness - do I need a backend?
-conditional validation? - form field dependencies?
- --}
