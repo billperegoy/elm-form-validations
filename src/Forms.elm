@@ -3,12 +3,16 @@ module Forms
         ( FieldValidator
         , Form
         , ValidationError
-        , errors
+        , errorList
+        , errorString
         , formValue
         , initForm
         , validateField
         , updateFormInput
+        , validateGreaterThan
+        , validateIsOneOf
         , validateLength
+        , validateLessThan
         , validateExistence
         , validateNumericality
         , validateNumericRange
@@ -99,9 +103,14 @@ updateFormInput form name value =
                 form
 
 
-errors : Form -> String -> String
-errors form name =
-    lookupErrorValue form name |> errorString
+errorString : Form -> String -> String
+errorString form name =
+    lookupErrorValue form name |> errorsToString
+
+
+errorList : Form -> String -> ValidationErrors
+errorList form name =
+    lookupErrorValue form name
 
 
 lookupErrorValue : Form -> String -> ValidationErrors
@@ -118,8 +127,8 @@ lookupErrorValue form name =
                 []
 
 
-errorString : ValidationErrors -> String
-errorString errors =
+errorsToString : ValidationErrors -> String
+errorsToString errors =
     let
         errorList =
             List.filter (\e -> e /= Nothing) errors
@@ -237,6 +246,48 @@ validateNumericRange min max string =
                 Just ("must be between " ++ toString min ++ " and " ++ toString max)
 
 
+validateLessThan : Int -> String -> Maybe String
+validateLessThan num string =
+    let
+        intValue =
+            String.toInt string
+    in
+        case intValue of
+            Ok value ->
+                if value >= num then
+                    Just ("must be < " ++ toString num)
+                else
+                    Nothing
+
+            Err _ ->
+                Just ("must be < " ++ toString num)
+
+
+validateGreaterThan : Int -> String -> Maybe String
+validateGreaterThan num string =
+    let
+        intValue =
+            String.toInt string
+    in
+        case intValue of
+            Ok value ->
+                if value <= num then
+                    Just ("must be > " ++ toString num)
+                else
+                    Nothing
+
+            Err _ ->
+                Just ("must be > " ++ toString num)
+
+
+validateIsOneOf : List String -> String -> Maybe String
+validateIsOneOf matches string =
+    if (List.any (\e -> e == string) matches) then
+        Nothing
+    else
+        Just ("must match one of (" ++ String.join ", " matches ++ ")")
+
+
 
 {--
 enhancements:
@@ -244,13 +295,7 @@ enhancements:
 allow custom error messages
 acceptance -checkbox is checked  (not nil)`
 confirmation - two fields the same
-exclusion - not within a set of values
-inclusion -in a set of values
-length - min and max
 numeriality - ony integer or float
-other compariosns vs.range (odd even, lt, gt, etc.)
-absence - does this make sense in my scenario?
 uniquemness - do I need a backend?
 conditional validation? - form field dependencies?
-ability to get raw messages as well as string join
  --}

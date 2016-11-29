@@ -30,6 +30,7 @@ signupFormFields =
     [ ( "email", emailValidations )
     , ( "password", passwordValidations )
     , ( "age", ageValidations )
+    , ( "stooge", stoogeValidations )
     ]
 
 
@@ -70,6 +71,13 @@ ageValidations =
     ]
 
 
+stoogeValidations : List Forms.FieldValidator
+stoogeValidations =
+    [ Forms.validateExistence
+    , Forms.validateIsOneOf [ "larry", "curly", "moe" ]
+    ]
+
+
 
 -- Update
 
@@ -78,6 +86,7 @@ type Msg
     = UpdateEmailText String
     | UpdatePasswordText String
     | UpdateAgeText String
+    | UpdateStoogeText String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -104,6 +113,13 @@ update msg model =
             }
                 ! []
 
+        UpdateStoogeText text ->
+            { model
+                | signupForm =
+                    Forms.updateFormInput model.signupForm "stooge" text
+            }
+                ! []
+
 
 
 -- View
@@ -122,7 +138,7 @@ emailFormElement form =
             ]
             []
         , small [ class "form-text text-muted" ]
-            [ text (Forms.errors form "email") ]
+            [ text (Forms.errorString form "email") ]
         ]
 
 
@@ -139,7 +155,7 @@ passwordFormElement form =
             ]
             []
         , small [ class "form-text text-muted" ]
-            [ text (Forms.errors form "password") ]
+            [ text (Forms.errorString form "password") ]
         ]
 
 
@@ -155,7 +171,23 @@ ageFormElement form =
             ]
             []
         , small [ class "form-text text-muted" ]
-            [ text (Forms.errors form "age") ]
+            [ text (Forms.errorString form "age") ]
+        ]
+
+
+stoogeFormElement : Forms.Form -> Html Msg
+stoogeFormElement form =
+    div [ class "form-group" ]
+        [ label [ for "exampleInputSge" ] [ text "Stooge" ]
+        , input
+            [ class "form-control"
+            , id "exampleInputStooge"
+            , placeholder "Stooge"
+            , onInput UpdateStoogeText
+            ]
+            []
+        , small [ class "form-text text-muted" ]
+            [ text (Forms.errorString form "stooge") ]
         ]
 
 
@@ -181,6 +213,7 @@ view model =
             [ emailFormElement model.signupForm
             , passwordFormElement model.signupForm
             , ageFormElement model.signupForm
+            , stoogeFormElement model.signupForm
             , signupFormSubmitButton model.signupForm
             ]
         ]
