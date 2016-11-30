@@ -7,7 +7,6 @@ module Forms
         , errorString
         , formValue
         , initForm
-        , validateField
         , updateFormInput
         , validateGreaterThan
         , validateIsOneOf
@@ -20,32 +19,71 @@ module Forms
         , validateStatus
         )
 
-import Regex
+{-| # Forms
+This library performs form validation for HTML forms. A user can define
+a list of form elements and define validations for each element. Each time the
+formis updated, validations are automatically run and validation results are updated
+for each form element as well as the overall form.
+
+API calls can be used to retrieve validation information that can be used to
+display validation errors on the form itself.
+
+# Definition
+
+# Types
+@docs FieldValidator, Form, ValidationError
+
+# Helper Functions
+@docs errorList, errorString, formValue, updateFormInput, validateStatus
+
+# Form Initializer
+@docs initForm
+
+
+# Primitive Validators
+@docs validateGreaterThan, validateIsOneOf, validateLength, validateLessThan
+@docs validateExistence, validateNumericality, validateNumericRange, validateRegex
+
+-}
+
 import Dict
+import Regex
 
 
+{-| TBD
+-}
 type alias ValidationError =
     Maybe String
 
 
+{-| TBD
+-}
 type alias ValidationErrors =
     List ValidationError
 
 
+{-| TBD
+-}
 type alias FormElements =
     Dict.Dict String FormElement
 
 
+{-| TBD
+-}
 type alias FieldValidator =
     String -> ValidationError
 
 
+{-| TBD
+-}
 type alias Form =
     { elements : FormElements
     , validateStatus : Bool
     }
 
 
+{-| TBD
+-}
 type alias FormElement =
     { input : String
     , errors : ValidationErrors
@@ -53,6 +91,8 @@ type alias FormElement =
     }
 
 
+{-| TBD
+-}
 initFormElement : ( String, List FieldValidator ) -> FormElement
 initFormElement field =
     { input = ""
@@ -61,6 +101,8 @@ initFormElement field =
     }
 
 
+{-| TBD
+-}
 initForm : List ( String, List FieldValidator ) -> Form
 initForm fields =
     let
@@ -73,6 +115,8 @@ initForm fields =
         Form elements False
 
 
+{-| TBD
+-}
 updateFormInput : Form -> String -> String -> Form
 updateFormInput form name value =
     let
@@ -103,16 +147,22 @@ updateFormInput form name value =
                 form
 
 
+{-| TBD
+-}
 errorString : Form -> String -> String
 errorString form name =
     lookupErrorValue form name |> errorsToString
 
 
+{-| TBD
+-}
 errorList : Form -> String -> ValidationErrors
 errorList form name =
     lookupErrorValue form name
 
 
+{-| TBD
+-}
 lookupErrorValue : Form -> String -> ValidationErrors
 lookupErrorValue form name =
     let
@@ -127,6 +177,8 @@ lookupErrorValue form name =
                 []
 
 
+{-| TBD
+-}
 errorsToString : ValidationErrors -> String
 errorsToString errors =
     let
@@ -140,6 +192,8 @@ errorsToString errors =
             String.join ", " errorList
 
 
+{-| TBD
+-}
 formValue : Form -> String -> String
 formValue form name =
     let
@@ -158,11 +212,20 @@ formValue form name =
 -- Validation
 
 
+{-| Determine if a string passed in from a form has any data.
+    Returns Nothing if value is present and an error string
+    otherwise.
+
+    validateExistence "" == Just "must be present"
+    validateExistence "form value" == Nothing
+-}
 validateSingle : FormElement -> ValidationErrors
 validateSingle formElement =
     validateField formElement.input formElement.validator
 
 
+{-| TBD
+-}
 validateForm : Form -> Bool
 validateForm form =
     let
@@ -175,11 +238,15 @@ validateForm form =
         (errorElements |> List.length) == 0
 
 
+{-| TBD
+-}
 validateField : String -> List (String -> Maybe String) -> ValidationErrors
 validateField data validations =
     List.map (\e -> e data) validations
 
 
+{-| TBD
+-}
 validateStatus : Form -> Bool
 validateStatus form =
     form.validateStatus
@@ -189,6 +256,8 @@ validateStatus form =
 -- Primitive validators
 
 
+{-| TBD
+-}
 validateExistence : String -> Maybe String
 validateExistence string =
     if String.length string > 0 then
@@ -197,6 +266,8 @@ validateExistence string =
         Just "must be present"
 
 
+{-| TBD
+-}
 validateLength : Int -> String -> Maybe String
 validateLength minLength string =
     if String.length string >= minLength then
@@ -205,6 +276,8 @@ validateLength minLength string =
         Just ("must be at least " ++ toString minLength ++ " characters")
 
 
+{-| TBD
+-}
 validateRegex : String -> String -> Maybe String
 validateRegex regex string =
     if Regex.contains (Regex.regex regex) string then
@@ -213,6 +286,8 @@ validateRegex regex string =
         Just "invalid string format"
 
 
+{-| TBD
+-}
 validateNumericality : String -> Maybe String
 validateNumericality string =
     let
@@ -227,6 +302,8 @@ validateNumericality string =
                 Just "must be numeric"
 
 
+{-| TBD
+-}
 validateNumericRange : Int -> Int -> String -> Maybe String
 validateNumericRange min max string =
     let
@@ -246,6 +323,8 @@ validateNumericRange min max string =
                 Just ("must be between " ++ toString min ++ " and " ++ toString max)
 
 
+{-| TBD
+-}
 validateLessThan : Int -> String -> Maybe String
 validateLessThan num string =
     let
@@ -263,6 +342,8 @@ validateLessThan num string =
                 Just ("must be < " ++ toString num)
 
 
+{-| TBD
+-}
 validateGreaterThan : Int -> String -> Maybe String
 validateGreaterThan num string =
     let
@@ -280,6 +361,8 @@ validateGreaterThan num string =
                 Just ("must be > " ++ toString num)
 
 
+{-| TBD
+-}
 validateIsOneOf : List String -> String -> Maybe String
 validateIsOneOf matches string =
     if (List.any (\e -> e == string) matches) then
