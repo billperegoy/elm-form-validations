@@ -6,6 +6,131 @@ import String
 import Forms
 
 
+validateExistenceTests : List Test
+validateExistenceTests =
+    [ test "validateExistence success" <|
+        \() ->
+            let
+                result =
+                    Forms.validateExistence "abc"
+
+                expected =
+                    Nothing
+            in
+                Expect.equal expected result
+    , test "validateExistence fail" <|
+        \() ->
+            let
+                result =
+                    Forms.validateExistence ""
+
+                expected =
+                    Just "must be present"
+            in
+                Expect.equal expected result
+    ]
+
+
+validateMinLengthTests : List Test
+validateMinLengthTests =
+    [ test "validateMinLength success" <|
+        \() ->
+            let
+                result =
+                    Forms.validateMinLength 5 "12345"
+
+                expected =
+                    Nothing
+            in
+                Expect.equal expected result
+    , test "validateMinLength fail" <|
+        \() ->
+            let
+                result =
+                    Forms.validateMinLength 5 "1234"
+
+                expected =
+                    Just "must be at least 5 characters"
+            in
+                Expect.equal expected result
+    ]
+
+
+validateMaxLengthTests : List Test
+validateMaxLengthTests =
+    [ test "validateMaxLength success" <|
+        \() ->
+            let
+                result =
+                    Forms.validateMaxLength 5 "12345"
+
+                expected =
+                    Nothing
+            in
+                Expect.equal expected result
+    , test "validateMaxLength fail" <|
+        \() ->
+            let
+                result =
+                    Forms.validateMaxLength 5 "123456"
+
+                expected =
+                    Just "must be at less than 5 characters"
+            in
+                Expect.equal expected result
+    ]
+
+
+validateRegexTests : List Test
+validateRegexTests =
+    [ test "validateRegex success" <|
+        \() ->
+            let
+                result =
+                    Forms.validateRegex "^[a-h]+$" "abcdefgh"
+
+                expected =
+                    Nothing
+            in
+                Expect.equal expected result
+    , test "validateRegex fail" <|
+        \() ->
+            let
+                result =
+                    Forms.validateRegex "^[a-h]+$" "abcdefghij"
+
+                expected =
+                    Just "invalid string format"
+            in
+                Expect.equal expected result
+    ]
+
+
+validateNumericalityTests : List Test
+validateNumericalityTests =
+    [ test "validateNumericality success" <|
+        \() ->
+            let
+                result =
+                    Forms.validateNumericality "95"
+
+                expected =
+                    Nothing
+            in
+                Expect.equal expected result
+    , test "validateNumericality fail" <|
+        \() ->
+            let
+                result =
+                    Forms.validateNumericality "bad"
+
+                expected =
+                    Just "must be numeric"
+            in
+                Expect.equal expected result
+    ]
+
+
 validateNumericRangeTests : List Test
 validateNumericRangeTests =
     [ test "validateNumericRange success" <|
@@ -150,7 +275,12 @@ all : Test
 all =
     describe "A Test Suite"
         (List.concat
-            [ validateNumericRangeTests
+            [ validateExistenceTests
+            , validateMinLengthTests
+            , validateMaxLengthTests
+            , validateRegexTests
+            , validateNumericalityTests
+            , validateNumericRangeTests
             , validateLessThanTests
             , validateGreaterThanTests
             , validateIsOneOfTests

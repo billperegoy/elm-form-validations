@@ -10,7 +10,8 @@ module Forms
         , updateFormInput
         , validateGreaterThan
         , validateIsOneOf
-        , validateLength
+        , validateMinLength
+        , validateMaxLength
         , validateLessThan
         , validateExistence
         , validateNumericality
@@ -41,7 +42,7 @@ display validation errors on the form itself.
 
 
 # Primitive Validators
-@docs validateGreaterThan, validateIsOneOf, validateLength, validateLessThan
+@docs validateGreaterThan, validateIsOneOf, validateMinLength, validateMaxLength, validateLessThan
 @docs validateExistence, validateNumericality, validateNumericRange, validateRegex
 
 -}
@@ -248,12 +249,22 @@ validateExistence string =
 
 {-| TBD
 -}
-validateLength : Int -> String -> Maybe String
-validateLength minLength string =
+validateMinLength : Int -> String -> Maybe String
+validateMinLength minLength string =
     if String.length string >= minLength then
         Nothing
     else
         Just ("must be at least " ++ toString minLength ++ " characters")
+
+
+{-| TBD
+-}
+validateMaxLength : Int -> String -> Maybe String
+validateMaxLength maxLength string =
+    if String.length string <= maxLength then
+        Nothing
+    else
+        Just ("must be at less than " ++ toString maxLength ++ " characters")
 
 
 {-| TBD

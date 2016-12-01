@@ -59,7 +59,8 @@ emailValidations =
 passwordValidations : List Forms.FieldValidator
 passwordValidations =
     [ Forms.validateExistence
-    , Forms.validateLength 10
+    , Forms.validateMinLength 10
+    , Forms.validateMaxLength 15
     ]
 
 
