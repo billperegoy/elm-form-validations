@@ -56,14 +56,6 @@ type alias ValidationError =
     Maybe String
 
 
-{-| TBD
--}
-type alias ValidationErrors =
-    List ValidationError
-
-
-{-| TBD
--}
 type alias FormElements =
     Dict.Dict String FormElement
 
@@ -82,17 +74,13 @@ type alias Form =
     }
 
 
-{-| TBD
--}
 type alias FormElement =
     { input : String
-    , errors : ValidationErrors
+    , errors : List ValidationError
     , validator : List FieldValidator
     }
 
 
-{-| TBD
--}
 initFormElement : ( String, List FieldValidator ) -> FormElement
 initFormElement field =
     { input = ""
@@ -156,14 +144,12 @@ errorString form name =
 
 {-| TBD
 -}
-errorList : Form -> String -> ValidationErrors
+errorList : Form -> String -> List ValidationError
 errorList form name =
     lookupErrorValue form name
 
 
-{-| TBD
--}
-lookupErrorValue : Form -> String -> ValidationErrors
+lookupErrorValue : Form -> String -> List ValidationError
 lookupErrorValue form name =
     let
         lookupValue =
@@ -177,9 +163,7 @@ lookupErrorValue form name =
                 []
 
 
-{-| TBD
--}
-errorsToString : ValidationErrors -> String
+errorsToString : List ValidationError -> String
 errorsToString errors =
     let
         errorList =
@@ -219,13 +203,11 @@ formValue form name =
     validateExistence "" == Just "must be present"
     validateExistence "form value" == Nothing
 -}
-validateSingle : FormElement -> ValidationErrors
+validateSingle : FormElement -> List ValidationError
 validateSingle formElement =
     validateField formElement.input formElement.validator
 
 
-{-| TBD
--}
 validateForm : Form -> Bool
 validateForm form =
     let
@@ -238,9 +220,7 @@ validateForm form =
         (errorElements |> List.length) == 0
 
 
-{-| TBD
--}
-validateField : String -> List (String -> Maybe String) -> ValidationErrors
+validateField : String -> List (String -> Maybe String) -> List ValidationError
 validateField data validations =
     List.map (\e -> e data) validations
 
@@ -323,7 +303,12 @@ validateNumericRange min max string =
                 Just ("must be between " ++ toString min ++ " and " ++ toString max)
 
 
-{-| TBD
+{-| Validates that a string converts to an integer and is less than the max
+supplied
+
+    validateLessThan 100 "95" == Nothing
+    validateLessThan 100 "105" == Just "must be < 100"
+    validateLessThan 100 "bad" == Just "must be < 100"
 -}
 validateLessThan : Int -> String -> Maybe String
 validateLessThan num string =
@@ -342,7 +327,12 @@ validateLessThan num string =
                 Just ("must be < " ++ toString num)
 
 
-{-| TBD
+{-| Validates that a string converts to an integer and is greater than the min
+supplied
+
+    validateGreaterThan 100 "105" == Nothing
+    validateGreaterThan 100 "95" == Just "must be > 100"
+    validateGreaterThan 100 "bad" == Just "must be > 100"
 -}
 validateGreaterThan : Int -> String -> Maybe String
 validateGreaterThan num string =
@@ -361,7 +351,10 @@ validateGreaterThan num string =
                 Just ("must be > " ++ toString num)
 
 
-{-| TBD
+{-| Validates that a string matches one of several potential matches
+
+    validateIsOneOf [ "cat", "bat", "rat" ] "bat" == Nothing
+    validateIsOneOf [ "cat", "bat", "rat" ] "brat" == Just "must match one of (cat, bat, rat)"
 -}
 validateIsOneOf : List String -> String -> Maybe String
 validateIsOneOf matches string =
