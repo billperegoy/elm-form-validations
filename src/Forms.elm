@@ -95,7 +95,8 @@ initFormElement field =
     }
 
 
-{-| TBD
+{-| Initializes a form.Accepts a list of (name, validator) tuples
+    and returns a Form.
 -}
 initForm : List ( String, List FieldValidator ) -> Form
 initForm fields =
@@ -109,7 +110,9 @@ initForm fields =
         Form elements False
 
 
-{-| TBD
+{-| Given a Form, a field name and a feild value and returns
+    a new form containing the update. This is genrally called
+    from the application's update function.
 -}
 updateFormInput : Form -> String -> String -> Form
 updateFormInput form name value =
@@ -186,7 +189,9 @@ errorsToString errors =
             String.join ", " errorList
 
 
-{-| TBD
+{-| Returns the current value of any form field.
+    Returns Nothing if an invalid form name is given.
+
 -}
 formValue : Form -> String -> String
 formValue form name =
@@ -206,16 +211,16 @@ formValue form name =
 -- Validation
 
 
-{-| Determine if a string passed in from a form has any data.
-    Returns Nothing if value is present and an error string
-    otherwise.
-
-    validateExistence "" == Just "must be present"
-    validateExistence "form value" == Nothing
--}
 validateSingle : FormElement -> List ValidationError
 validateSingle formElement =
     validateField formElement.input formElement.validator
+
+
+{-| Returns a Bool representing the current validation status of a form.
+-}
+validateStatus : Form -> Bool
+validateStatus form =
+    form.validateStatus
 
 
 validateForm : Form -> Bool
@@ -235,18 +240,14 @@ validateField data validations =
     List.map (\e -> e data) validations
 
 
-{-| TBD
--}
-validateStatus : Form -> Bool
-validateStatus form =
-    form.validateStatus
-
-
 
 -- Primitive validators
 
 
-{-| TBD
+{-| Validates existance of a form vale.
+
+    validateExistence "" == Just "must be present"
+    validateExistence "valid" == Nothing
 -}
 validateExistence : String -> Maybe String
 validateExistence string =
@@ -256,7 +257,10 @@ validateExistence string =
         Just "must be present"
 
 
-{-| TBD
+{-| Validates that a form element is of a minimum length.
+
+    validateMinLength 2 "123" == Nothing
+    validateMinLength 4 "123" == Just "must be at least 4 characters"
 -}
 validateMinLength : Int -> String -> Maybe String
 validateMinLength minLength string =
@@ -266,7 +270,10 @@ validateMinLength minLength string =
         Just ("must be at least " ++ toString minLength ++ " characters")
 
 
-{-| TBD
+{-| Validates that a form element is less than a maximum length.
+
+    validateMaxLength 4 "123" == Nothing
+    validateMaxLength 2 "123" == Just "must be at least 2 characters or fewer"
 -}
 validateMaxLength : Int -> String -> Maybe String
 validateMaxLength maxLength string =
@@ -276,7 +283,7 @@ validateMaxLength maxLength string =
         Just ("must be " ++ toString maxLength ++ " characters or fewer")
 
 
-{-| TBD
+{-| Validates that a form element matches a regular expression.
 -}
 validateRegex : String -> String -> Maybe String
 validateRegex regex string =
@@ -286,7 +293,7 @@ validateRegex regex string =
         Just "invalid string format"
 
 
-{-| TBD
+{-| Validates that a form element is a valid integer.
 -}
 validateNumericality : String -> Maybe String
 validateNumericality string =
@@ -302,7 +309,7 @@ validateNumericality string =
                 Just "must be numeric"
 
 
-{-| TBD
+{-| iValidates that an integer field is within a specified numeric range.
 -}
 validateNumericRange : Int -> Int -> String -> Maybe String
 validateNumericRange min max string =
