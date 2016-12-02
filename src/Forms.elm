@@ -42,8 +42,9 @@ display validation errors on the form itself.
 
 
 # Primitive Validators
-@docs validateGreaterThan, validateIsOneOf, validateMinLength, validateMaxLength, validateLessThan
-@docs validateExistence, validateNumericality, validateNumericRange, validateRegex
+@docs validateGreaterThan, validateIsOneOf, validateMinLength
+@docs validateMaxLength, validateLessThan, validateExistence
+@docs validateNumericality, validateNumericRange, validateRegex
 
 -}
 
@@ -51,28 +52,32 @@ import Dict
 import Regex
 
 
-{-| TBD
+{-| A validation result is simply a Maybe String.
+    Nothing indicates no error. Otherwise it's Just "error message"
 -}
 type alias ValidationError =
     Maybe String
 
 
-type alias FormElements =
-    Dict.Dict String FormElement
-
-
-{-| TBD
+{-| A field validator is a function that takes a string to be validated and
+    returns a ValidationError (Maybe String)
 -}
 type alias FieldValidator =
     String -> ValidationError
 
 
-{-| TBD
+{-| A form is a set of form elements and a boolean indicating the validate
+    status. Details of the FormElements type are not exposed to the user.
+    Instead an API is provided so those details can be fluid.
 -}
 type alias Form =
     { elements : FormElements
     , validateStatus : Bool
     }
+
+
+type alias FormElements =
+    Dict.Dict String FormElement
 
 
 type alias FormElement =
@@ -136,14 +141,18 @@ updateFormInput form name value =
                 form
 
 
-{-| TBD
+{-| Returns a formatted string representing all current validation errors.
+
+    ErrorSring form "user" == "must be present, must be 10 characters or fewer"
 -}
 errorString : Form -> String -> String
 errorString form name =
     lookupErrorValue form name |> errorsToString
 
 
-{-| TBD
+{-| Returns raw list of all current validation errors."
+
+    ErrorList form "user" == [ Just "must be present", Just "must be 10 characters or fewer" ]
 -}
 errorList : Form -> String -> List ValidationError
 errorList form name =
@@ -264,7 +273,7 @@ validateMaxLength maxLength string =
     if String.length string <= maxLength then
         Nothing
     else
-        Just ("must be at less than " ++ toString maxLength ++ " characters")
+        Just ("must be " ++ toString maxLength ++ " characters or fewer")
 
 
 {-| TBD

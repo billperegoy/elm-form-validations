@@ -3,7 +3,33 @@ module Tests exposing (..)
 import Test exposing (..)
 import Expect
 import String
+import Dict
 import Forms
+
+
+formsTests : List Test
+formsTests =
+    [ test "initForm sets initial validate status as False" <|
+        \() ->
+            let
+                form =
+                    Forms.initForm
+                        [ ( "field1", [ Forms.validateExistence, Forms.validateMaxLength 10 ] )
+                        , ( "field2", [ Forms.validateExistence ] )
+                        ]
+            in
+                Expect.equal form.validateStatus False
+    , test "initForm stores correct number of form elements" <|
+        \() ->
+            let
+                form =
+                    Forms.initForm
+                        [ ( "field1", [ Forms.validateExistence, Forms.validateMaxLength 10 ] )
+                        , ( "field2", [ Forms.validateExistence ] )
+                        ]
+            in
+                Expect.equal (form.elements |> Dict.keys |> List.length) 2
+    ]
 
 
 validateExistenceTests : List Test
@@ -75,7 +101,7 @@ validateMaxLengthTests =
                     Forms.validateMaxLength 5 "123456"
 
                 expected =
-                    Just "must be at less than 5 characters"
+                    Just "must be 5 characters or fewer"
             in
                 Expect.equal expected result
     ]
@@ -275,7 +301,8 @@ all : Test
 all =
     describe "A Test Suite"
         (List.concat
-            [ validateExistenceTests
+            [ formsTests
+            , validateExistenceTests
             , validateMinLengthTests
             , validateMaxLengthTests
             , validateRegexTests
