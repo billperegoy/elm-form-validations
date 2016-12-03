@@ -1,7 +1,7 @@
 {
     "version": "1.0.0",
     "summary": "form validation library for Elm",
-    "repository": "https://github.com/billperegoy/elm-form-validatins.git",
+    "repository": "https://github.com/billperegoy/elm-form-validations.git",
     "license": "BSD3",
     "source-directories": [
         "src"
