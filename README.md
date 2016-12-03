@@ -89,6 +89,6 @@ view model =
 ## Full Example
 For a full working example of this librray in use, please visit.
 
-[https://github.com/billperegoy/elm-forms-example](https://github.com/billperegoy/elm-forms-example]r)
+[https://github.com/billperegoy/elm-forms-example](https://github.com/billperegoy/elm-forms-example)
 
 
