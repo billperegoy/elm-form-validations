@@ -30,7 +30,7 @@ The loginFormFields function is where all the field definition occurs. 
 ```
 loginFormFields : List ( String, List Forms.FieldValidator )
 loginFormFields =
-    [ ("name", nameValidations
+    [ ( "name", nameValidations )
     , ( "email", emailValidations )
     , ( "password", passwordValidations )
     ]
