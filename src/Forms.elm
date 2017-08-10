@@ -2,7 +2,7 @@ module Forms
     exposing
         ( FieldValidator
         , Form
-        , ValidationError
+        , ValidationError (..)
         , errorList
         , errorString
         , formValue
@@ -55,15 +55,24 @@ import Regex
 {-| A validation result is simply a Maybe String.
     Nothing indicates no error. Otherwise it's Just "error message"
 -}
-type alias ValidationError =
-    Maybe String
+type ValidationError =
+      NotGreaterThan Int
+    | DoesNotExist
+    | MinLength Int
+    | MaxLength Int
+    | NotRegex String
+    | NotNumeric
+    | NotInNumericRange Int Int
+    | NotLessThan Int
+    | NotOneOf (List String)
+    | CustomError String
 
 
 {-| A field validator is a function that takes a string to be validated and
     returns a ValidationError (Maybe String)
 -}
 type alias FieldValidator =
-    String -> ValidationError
+    String -> Maybe ValidationError
 
 
 {-| A form is a set of form elements and a boolean indicating the validate
@@ -175,19 +184,29 @@ lookupErrorValue form name =
             Nothing ->
                 []
 
+validationErrorToString : ValidationError -> String
+validationErrorToString err =
+    case err of
+        NotGreaterThan n -> "must be < " ++ toString n
+        DoesNotExist -> "must be present"
+        MinLength n -> "must be at least " ++ toString n ++ " characters"
+        MaxLength n -> "must be " ++ toString n ++ " characters of fewer"
+        NotRegex s -> "invalid string format"
+        NotNumeric -> "must be numeric"
+        NotInNumericRange from to -> "must be between " ++ toString from ++ " and " ++ toString to
+        NotLessThan n -> "must be > " ++ toString n
+        NotOneOf matches -> "must match one of (" ++ String.join ", " matches ++ ")"
+        CustomError err -> err
 
 errorsToString : List ValidationError -> String
 errorsToString errors =
     let
-        errorList =
-            List.filter (\e -> e /= Nothing) errors
-                |> List.map (\e -> Maybe.withDefault "" e)
+        errorList = List.map validationErrorToString errors
     in
         if List.length errorList == 0 then
             "no errors"
         else
             String.join ", " errorList
-
 
 {-| Returns the current value of any form field.
     Returns Nothing if an invalid form name is given.
@@ -230,14 +249,14 @@ validateForm form =
             List.concatMap
                 (\elem -> validateSingle (Tuple.second elem))
                 (Dict.toList form.elements)
-                |> List.filter (\e -> e /= Nothing)
     in
         (errorElements |> List.length) == 0
 
 
-validateField : String -> List (String -> Maybe String) -> List ValidationError
+validateField : String -> List (String -> Maybe ValidationError) -> List ValidationError
 validateField data validations =
     List.map (\e -> e data) validations
+        |> List.filterMap identity
 
 
 
@@ -249,12 +268,12 @@ validateField data validations =
     validateExistence "" == Just "must be present"
     validateExistence "valid" == Nothing
 -}
-validateExistence : String -> Maybe String
+validateExistence : String -> Maybe ValidationError
 validateExistence string =
     if String.length string > 0 then
         Nothing
     else
-        Just "must be present"
+        Just DoesNotExist
 
 
 {-| Validates that a form element is of a minimum length.
@@ -262,12 +281,12 @@ validateExistence string =
     validateMinLength 2 "123" == Nothing
     validateMinLength 4 "123" == Just "must be at least 4 characters"
 -}
-validateMinLength : Int -> String -> Maybe String
+validateMinLength : Int -> String -> Maybe ValidationError
 validateMinLength minLength string =
     if String.length string >= minLength then
         Nothing
     else
-        Just ("must be at least " ++ toString minLength ++ " characters")
+        Just (MinLength minLength)
 
 
 {-| Validates that a form element is less than a maximum length.
@@ -275,27 +294,27 @@ validateMinLength minLength string =
     validateMaxLength 4 "123" == Nothing
     validateMaxLength 2 "123" == Just "must be at least 2 characters or fewer"
 -}
-validateMaxLength : Int -> String -> Maybe String
+validateMaxLength : Int -> String -> Maybe ValidationError
 validateMaxLength maxLength string =
     if String.length string <= maxLength then
         Nothing
     else
-        Just ("must be " ++ toString maxLength ++ " characters or fewer")
+        Just (MaxLength maxLength)
 
 
 {-| Validates that a form element matches a regular expression.
 -}
-validateRegex : String -> String -> Maybe String
+validateRegex : String -> String -> Maybe ValidationError
 validateRegex regex string =
     if Regex.contains (Regex.regex regex) string then
         Nothing
     else
-        Just "invalid string format"
+        Just (NotRegex regex)
 
 
 {-| Validates that a form element is a valid integer.
 -}
-validateNumericality : String -> Maybe String
+validateNumericality : String -> Maybe ValidationError
 validateNumericality string =
     let
         intValue =
@@ -306,12 +325,12 @@ validateNumericality string =
                 Nothing
 
             Err _ ->
-                Just "must be numeric"
+                Just NotNumeric
 
 
 {-| iValidates that an integer field is within a specified numeric range.
 -}
-validateNumericRange : Int -> Int -> String -> Maybe String
+validateNumericRange : Int -> Int -> String -> Maybe ValidationError
 validateNumericRange min max string =
     let
         intValue =
@@ -320,14 +339,14 @@ validateNumericRange min max string =
         case intValue of
             Ok value ->
                 if value < min then
-                    Just ("must be >= " ++ toString min)
+                    Just (NotGreaterThan min)
                 else if value > max then
-                    Just ("must be <= " ++ toString max)
+                    Just (NotLessThan max)
                 else
                     Nothing
 
             Err _ ->
-                Just ("must be between " ++ toString min ++ " and " ++ toString max)
+                Just (NotInNumericRange min max)
 
 
 {-| Validates that a string converts to an integer and is less than the max
@@ -337,7 +356,7 @@ supplied
     validateLessThan 100 "105" == Just "must be < 100"
     validateLessThan 100 "bad" == Just "must be < 100"
 -}
-validateLessThan : Int -> String -> Maybe String
+validateLessThan : Int -> String -> Maybe ValidationError
 validateLessThan num string =
     let
         intValue =
@@ -346,12 +365,12 @@ validateLessThan num string =
         case intValue of
             Ok value ->
                 if value >= num then
-                    Just ("must be < " ++ toString num)
+                    Just (NotLessThan num)
                 else
                     Nothing
 
             Err _ ->
-                Just ("must be < " ++ toString num)
+                Just (NotLessThan num)
 
 
 {-| Validates that a string converts to an integer and is greater than the min
@@ -361,7 +380,7 @@ supplied
     validateGreaterThan 100 "95" == Just "must be > 100"
     validateGreaterThan 100 "bad" == Just "must be > 100"
 -}
-validateGreaterThan : Int -> String -> Maybe String
+validateGreaterThan : Int -> String -> Maybe ValidationError
 validateGreaterThan num string =
     let
         intValue =
@@ -370,12 +389,12 @@ validateGreaterThan num string =
         case intValue of
             Ok value ->
                 if value <= num then
-                    Just ("must be > " ++ toString num)
+                    Just (NotGreaterThan num)
                 else
                     Nothing
 
             Err _ ->
-                Just ("must be > " ++ toString num)
+                Just (NotGreaterThan num)
 
 
 {-| Validates that a string matches one of several potential matches
@@ -383,9 +402,9 @@ validateGreaterThan num string =
     validateIsOneOf [ "cat", "bat", "rat" ] "bat" == Nothing
     validateIsOneOf [ "cat", "bat", "rat" ] "brat" == Just "must match one of (cat, bat, rat)"
 -}
-validateIsOneOf : List String -> String -> Maybe String
+validateIsOneOf : List String -> String -> Maybe ValidationError
 validateIsOneOf matches string =
     if (List.any (\e -> e == string) matches) then
         Nothing
     else
-        Just ("must match one of (" ++ String.join ", " matches ++ ")")
+        Just (NotOneOf matches)
