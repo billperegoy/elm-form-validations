@@ -1,9 +1,9 @@
 module Main exposing (..)
 
+import Forms
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Forms
 
 
 main : Program Never Model Msg
