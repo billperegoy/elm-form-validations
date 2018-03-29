@@ -675,6 +675,36 @@ haveSameValue name sameAsName elems =
                 Nothing
 
 
+isCheckedThenValidate : String -> String -> List FieldValidator -> List ( String, FormElement ) -> Maybe DependencyError
+isCheckedThenValidate checkboxName inputName validators elems =
+    let
+        mCheckbox =
+            dGet elems checkboxName
+
+        mInput =
+            dGet elems inputName
+    in
+        case mCheckbox of
+            Just ( _, checkbox ) ->
+                case mInput of
+                    Just ( _, input ) ->
+                        if checkbox.input == "true" then
+                            case List.head (validateSingle { input | validator = validators }) of
+                                Nothing ->
+                                    Nothing
+
+                                Just e ->
+                                    Just (DependencyError checkboxName inputName e)
+                        else
+                            Nothing
+
+                    Nothing ->
+                        Nothing
+
+            Nothing ->
+                Nothing
+
+
 dGet : List ( a, b ) -> a -> Maybe ( a, b )
 dGet l elem =
     List.head (List.filter (\( k, _ ) -> k == elem) l)
