@@ -1,10 +1,10 @@
 module Tests exposing (..)
 
-import Test exposing (..)
-import Expect
-import String
 import Dict
+import Expect
 import Forms
+import String
+import Test exposing (..)
 
 
 formsTests : List Test
